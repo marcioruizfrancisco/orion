@@ -1,0 +1,98 @@
+# Orion - TODO
+
+> Este documento centraliza todas as tarefas, decisões e ideias do projeto Orion.
+>
+> **Princípio:** nenhuma ideia deve interromper um ciclo em andamento. Novas ideias são registradas aqui e priorizadas no momento adequado.
+
+---
+
+# 🎯 Em Execução
+
+> Nenhum ciclo em execução.
+
+---
+
+# 🚀 Próximo Ciclo
+
+* [ ] Criar a estrutura inicial de diretórios do projeto.
+* [ ] Criar o script `01_create_structure_initial.sh`.
+* [ ] Validar a estrutura criada.
+
+---
+
+# 📦 Infraestrutura
+
+## DockerBase
+
+* [ ] Criar DockerBase.
+* [ ] Configurar Traefik.
+* [ ] Configurar PostgreSQL.
+* [ ] Configurar Redis.
+* [ ] Configurar Portainer.
+* [ ] Configurar PHP 8.3.
+* [ ] Configurar Composer.
+* [ ] Configurar N8N.
+
+---
+
+# 📚 Documentação
+
+* [ ] Criar OTD-000 (Project Charter).
+* [ ] Criar PRD completo.
+* [ ] Traduzir documentação para inglês.
+* [ ] Traduzir documentação para espanhol.
+
+---
+
+# 🛠️ Desenvolvimento
+
+* [ ] Criar estrutura padrão do projeto.
+* [ ] Definir padrão de logs.
+* [ ] Definir padrão de arquivos `.env`.
+* [ ] Definir convenções de nomenclatura.
+* [ ] Documentar workflow Git.
+
+---
+
+# 🔮 Futuro
+
+* [ ] Integrar Evolution API.
+* [ ] Integrar Evolution CRM.
+* [ ] Integrar Cal.com.
+* [ ] Avaliar IA para automações.
+* [ ] Avaliar monitoramento centralizado.
+
+---
+
+# 💡 Ideias
+
+> Ideias ainda não priorizadas.
+
+* [ ] Avaliar Obsidian como segunda memória pessoal.
+* [ ] Criar ADRs (Architecture Decision Records).
+* [ ] Criar dashboard central do Orion.
+* [ ] Criar ambiente completo com um único comando.
+
+---
+
+# ✅ Concluído
+
+## Ciclo 01
+
+* [x] Criado o repositório oficial no GitHub.
+* [x] Configurado acesso SSH.
+* [x] Publicado o README inicial.
+* [x] Publicado o CHANGELOG inicial.
+* [x] Criado o workflow Git.
+* [x] Criado o arquivo `scripts/git-aliases.sh`.
+
+---
+
+# 📌 Regras
+
+1. Todo ciclo deve terminar com uma entrega concreta.
+2. Nenhuma ideia interrompe um ciclo em andamento.
+3. Toda nova ideia deve ser registrada neste documento.
+4. O TODO deve permanecer simples e objetivo.
+5. Concluir é mais importante do que expandir.
+

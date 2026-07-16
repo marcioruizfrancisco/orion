@@ -1,0 +1,36 @@
+# ============================================================
+# Orion - Stack Portainer
+# Arquivo: docker-compose.portainer.yml
+#
+# Objetivo:
+#   Instalar o Portainer Community Edition como painel
+#   oficial de administração das Stacks Docker do Orion.
+#
+# Observações:
+#   - Stack independente.
+#   - Não utiliza orion_network.
+#   - Persistência através do volume orion_portainer_data.
+#
+# ============================================================
+
+services:
+
+  portainer:
+    image: portainer/portainer-ce:latest
+
+    container_name: orion_portainer
+
+    restart: unless-stopped
+
+    ports:
+      - "9443:9443"
+
+    volumes:
+      - orion_portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+
+volumes:
+
+  orion_portainer_data:
+    name: orion_portainer_data

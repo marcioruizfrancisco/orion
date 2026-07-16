@@ -1,0 +1,63 @@
+# Changelog
+
+Todas as mudanças importantes deste projeto serão documentadas neste arquivo.
+
+O formato segue uma adaptação do padrão Keep a Changelog, mantendo o histórico de evolução do projeto Orion.
+
+---
+
+# [1.0.0] - 2026-07-16
+
+## Added
+
+* Criação inicial do projeto Orion.
+* Criação do repositório oficial no GitHub.
+* Configuração inicial do controle de versão Git.
+* Configuração de autenticação SSH para o GitHub.
+* Adição do README inicial do projeto.
+* Definição inicial da filosofia e dos princípios do Orion.
+
+## Documentation
+
+* Definição do conceito de plataforma modular.
+* Definição da estratégia de documentação multilíngue:
+
+  * Português (Brasil)
+  * English (US)
+  * Español
+
+## Infrastructure
+
+* Definição inicial da estrutura base do projeto.
+* Definição do diretório raiz do projeto:
+
+```text
+/srv/base
+```
+
+## Development Workflow
+
+* Definição do fluxo Git:
+
+  * Branch principal: `main`
+  * Branch de desenvolvimento: `marcio`
+* Criação dos aliases Git específicos do Orion:
+
+  * `o1` - preparar ambiente de trabalho
+  * `o2` - atualizar main
+  * `o3` - criar branch de desenvolvimento
+  * `o4` - verificar alterações
+  * `o5` - retornar para main
+  * `o6` - realizar merge
+  * `o7` - enviar alterações para o GitHub
+
+---
+
+## Next
+
+Próximos passos planejados:
+
+* Criar TODO.md.
+* Criar OTD-000 Project Charter.
+* Criar estrutura inicial de diretórios do Orion.
+* Iniciar implementação do DockerBase.

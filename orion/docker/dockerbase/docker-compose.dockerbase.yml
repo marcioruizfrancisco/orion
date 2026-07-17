@@ -1,0 +1,45 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: ${ORION_POSTGRES_CONTAINER}
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${ORION_POSTGRES_DB}
+      POSTGRES_USER: ${ORION_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${ORION_POSTGRES_PASSWORD}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - orion_network
+
+
+  redis:
+    image: redis:7
+    container_name: ${ORION_REDIS_CONTAINER}
+
+    restart: unless-stopped
+
+    volumes:
+      - redis_data:/data
+
+    networks:
+      - orion_network
+
+volumes:
+
+  postgres_data:
+    name: ${ORION_POSTGRES_VOLUME}
+
+  redis_data:
+    name: ${ORION_REDIS_VOLUME}
+    
+networks:
+
+  orion_network:
+    name: ${ORION_NETWORK}
+    driver: bridge

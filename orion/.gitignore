@@ -1,0 +1,30 @@
+# ============================================================
+# Orion Project
+#
+# Arquivo:
+#   .gitignore
+#
+# Objetivo:
+#   Proteger arquivos locais e informações sensíveis.
+#
+# ============================================================
+
+
+# Ambiente local
+.env
+
+
+# Logs locais
+/logs/*
+!/logs/.gitkeep
+
+
+# Dados persistentes locais
+/storage/*
+!/storage/.gitkeep
+
+
+
+
+
+

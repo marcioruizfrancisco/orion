@@ -1,45 +1,103 @@
 services:
 
   postgres:
-    image: postgres:16
-    container_name: ${ORION_POSTGRES_CONTAINER}
+
+    image: ${POSTGRES_IMAGE}
+
+    container_name: ${POSTGRES_CONTAINER_NAME}
+
+    hostname: ${POSTGRES_HOSTNAME}
 
     restart: unless-stopped
 
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
     environment:
-      POSTGRES_DB: ${ORION_POSTGRES_DB}
-      POSTGRES_USER: ${ORION_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${ORION_POSTGRES_PASSWORD}
+
+      POSTGRES_DB: ${POSTGRES_DB}
+
+      POSTGRES_USER: ${POSTGRES_USER}
+
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
 
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+
+      - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
+
+
+    healthcheck:
+
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+        ]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
+
+      start_period: 15s
+
 
     networks:
-      - orion_network
+
+      - orion-network
+
 
 
   redis:
-    image: redis:7
-    container_name: ${ORION_REDIS_CONTAINER}
+
+    image: ${REDIS_IMAGE}
+
+    container_name: ${REDIS_CONTAINER_NAME}
+
+    hostname: ${REDIS_HOSTNAME}
 
     restart: unless-stopped
 
+    ports:
+      - "${REDIS_PORT}:6379"
+
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+
     volumes:
-      - redis_data:/data
+
+      - ${REDIS_DATA_PATH}:/data
+
+
+    healthcheck:
+
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
+
+      start_period: 10s
+
 
     networks:
-      - orion_network
 
-volumes:
-
-  postgres_data:
-    name: ${ORION_POSTGRES_VOLUME}
-
-  redis_data:
-    name: ${ORION_REDIS_VOLUME}
-    
+      - orion-network
 networks:
 
-  orion_network:
-    name: ${ORION_NETWORK}
-    driver: bridge
+  orion-network:
+
+    name: orion-network
+
+    external: true

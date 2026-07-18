@@ -1,98 +1,137 @@
 # Orion - TODO
 
-> Este documento centraliza todas as tarefas, decisões e ideias do projeto Orion.
->
-> **Princípio:** nenhuma ideia deve interromper um ciclo em andamento. Novas ideias são registradas aqui e priorizadas no momento adequado.
+
+# 🚧 Ciclo Atual
+
+## Ciclo 10.2 - Automação de criação de bancos PostgreSQL
+
+[ ] Testar idempotência do provisionamento PostgreSQL
+
+[ ] Remover DEBUG dos scripts
+
+[ ] Criar commit do Ciclo 10.2
+
 
 ---
 
-# 🎯 Em Execução
+# Subciclo Fundação
 
-> Nenhum ciclo em execução.
+## Ambiente
 
----
+[x] Reescrever create_env_links.sh
 
-# 🚀 Próximo Ciclo
+[x] Tornar cálculo do link relativo automático
 
-* [ ] Criar a estrutura inicial de diretórios do projeto.
-* [ ] Criar o script `01_create_structure_initial.sh`.
-* [ ] Validar a estrutura criada.
+[x] Definir estratégia de configuração centralizada via .env (SSOT)
 
----
+[x] Validar em Portainer
 
-# 📦 Infraestrutura
+[x] Validar em DockerBase
 
-## DockerBase
+[x] Validar em 03_stacks
 
-* [ ] Criar DockerBase.
-* [ ] Configurar Traefik.
-* [ ] Configurar PostgreSQL.
-* [ ] Configurar Redis.
-* [ ] Configurar Portainer.
-* [ ] Configurar PHP 8.3.
-* [ ] Configurar Composer.
-* [ ] Configurar N8N.
 
----
+## PostgreSQL
 
-# 📚 Documentação
+[x] Definir estratégia de criação automática de bancos PostgreSQL
 
-* [ ] Criar OTD-000 (Project Charter).
-* [ ] Criar PRD completo.
-* [ ] Traduzir documentação para inglês.
-* [ ] Traduzir documentação para espanhol.
+[x] Criar motor de descoberta automática das Stacks PostgreSQL
+
+[x] Criar execução automática dos scripts de banco
+
+[x] Validar criação de usuário PostgreSQL
+
+[x] Validar criação de banco PostgreSQL
+
+[x] Validar integração Evolution API + PostgreSQL
+
 
 ---
 
-# 🛠️ Desenvolvimento
+# Scripts
 
-* [ ] Criar estrutura padrão do projeto.
-* [ ] Definir padrão de logs.
-* [ ] Definir padrão de arquivos `.env`.
-* [ ] Definir convenções de nomenclatura.
-* [ ] Documentar workflow Git.
+[ ] Criar biblioteca compartilhada PostgreSQL (`scripts/lib/postgres.sh`) após existirem pelo menos três Stacks PostgreSQL utilizando o mesmo padrão.
 
----
+[ ] Avaliar renomear `03_create_database.sh` para `03_provision.sh` quando existirem recursos além de bancos de dados.
 
-# 🔮 Futuro
+[ ] Criar create_stack.sh
 
-* [ ] Integrar Evolution API.
-* [ ] Integrar Evolution CRM.
-* [ ] Integrar Cal.com.
-* [ ] Avaliar IA para automações.
-* [ ] Avaliar monitoramento centralizado.
+[ ] Criar backup.sh
+
 
 ---
 
-# 💡 Ideias
+# Docker
 
-> Ideias ainda não priorizadas.
+## Em andamento
 
-* [ ] Avaliar Obsidian como segunda memória pessoal.
-* [ ] Criar ADRs (Architecture Decision Records).
-* [ ] Criar dashboard central do Orion.
-* [ ] Criar ambiente completo com um único comando.
+[x] Evolution API - Banco PostgreSQL
 
----
 
-# ✅ Concluído
+## Futuro
 
-## Ciclo 01
+[ ] Finalizar Evolution API
 
-* [x] Criado o repositório oficial no GitHub.
-* [x] Configurado acesso SSH.
-* [x] Publicado o README inicial.
-* [x] Publicado o CHANGELOG inicial.
-* [x] Criado o workflow Git.
-* [x] Criado o arquivo `scripts/git-aliases.sh`.
+[ ] Criar PHP Base
+
+[ ] Criar Composer
+
+[ ] Criar N8N
+
 
 ---
 
-# 📌 Regras
+# Arquitetura
 
-1. Todo ciclo deve terminar com uma entrega concreta.
-2. Nenhuma ideia interrompe um ciclo em andamento.
-3. Toda nova ideia deve ser registrada neste documento.
-4. O TODO deve permanecer simples e objetivo.
-5. Concluir é mais importante do que expandir.
+[ ] Especificar padrão dos bancos
 
+[ ] Especificar padrão dos volumes
+
+[ ] Especificar padrão dos logs
+
+[ ] Criar ADR
+
+
+---
+
+# Documentação
+
+[ ] README padrão para Stacks
+
+[ ] Documentar decisões arquiteturais
+
+[ ] Criar ADR
+
+[ ] Tradução EN
+
+[ ] Tradução ES
+
+
+---
+
+# Backlog
+
+[ ] Windows
+
+[ ] Docker Desktop
+
+[ ] Wizard
+
+[ ] Templates PHP
+
+[ ] Templates Python
+
+[ ] Templates Node
+
+
+---
+
+# Futuro
+
+[ ] Dashboard Orion
+
+[ ] Obsidian
+
+[ ] Monitoramento
+
+[ ] IA

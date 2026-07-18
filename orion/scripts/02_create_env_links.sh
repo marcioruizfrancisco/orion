@@ -7,46 +7,92 @@
 #   02_create_env_links.sh
 #
 # Objetivo:
-#   Inicializar o ambiente de configuração do Orion.
+#   Preparar o ambiente de configuração do Orion.
 #
 # Responsabilidades:
 #   - Criar o arquivo .env a partir do .env.example
 #     caso ainda não exista.
-#   - Criar automaticamente os links simbólicos para todas
-#     as Stacks Docker do Orion.
-#   - Nunca sobrescrever um arquivo .env existente.
-#
-# Execução:
-#   ./02_create_env_links.sh
-#
-# Tornar executável:
-#   sudo chmod +x 02_create_env_links.sh
+#   - Localizar automaticamente todas as áreas Docker.
+#   - Criar links simbólicos relativos para o .env principal.
+#   - Nunca sobrescrever arquivos .env existentes.
 #
 # ============================================================
 
 set -e
 
 # ============================================================
-# Diretório raiz do Orion
+# Remove o arquivo env ( já que estamos fazendo tudo no env.example )
+#
+# Uso:
+#	./02_create_env_links.sh --reset
 # ============================================================
 
-ORION_HOME="$(cd "$(dirname "$0")/.." && pwd)"
+if [ "$1" = "--reset" ]; then
+    echo "Modo RESET ativado."
+    rm -f "$ORION_HOME/.env"
+fi
+
+
+# ============================================================
+# Localizar raiz do Orion
+# ============================================================
+
+find_orion_root()
+{
+
+    CURRENT_DIR="$(pwd)"
+
+    while [ "$CURRENT_DIR" != "/" ]
+    do
+
+        if [ -f "$CURRENT_DIR/.env.example" ]; then
+
+            echo "$CURRENT_DIR"
+            return 0
+
+        fi
+
+        CURRENT_DIR="$(dirname "$CURRENT_DIR")"
+
+    done
+
+    return 1
+
+}
+
+
+ORION_HOME=$(find_orion_root)
+
+
+if [ -z "$ORION_HOME" ]; then
+
+    echo
+    echo "❌ Não foi possível localizar a raiz do Orion."
+    echo
+
+    exit 1
+
+fi
+
 
 cd "$ORION_HOME"
 
-SCRIPT_NAME="$(basename "$0")"
 
 echo
 echo "============================================================"
 echo " Orion Project"
-echo " Inicialização do Ambiente"
-echo " "
-echo " Copiando arquivo de configuração para as Stacks..."
+echo " Preparação da Configuração"
 echo "============================================================"
 echo
 
+echo "Raiz encontrada:"
+echo "$ORION_HOME"
+
+echo
+
+
 # ============================================================
-# Verificação do arquivo .env
+# Criar .env principal
 # ============================================================
 
 if [ -f ".env" ]; then
@@ -55,66 +101,120 @@ if [ -f ".env" ]; then
 
 else
 
-    echo "⚠ Arquivo .env não encontrado."
 
     if [ ! -f ".env.example" ]; then
 
-        echo
-        echo "❌ Arquivo .env.example não encontrado."
-        echo
-        echo "Não é possível inicializar o ambiente."
+        echo "❌ .env.example não encontrado."
+
         exit 1
 
     fi
 
+
     cp .env.example .env
 
-    echo "✔ Arquivo .env criado a partir do .env.example."
+
+    echo "✔ Arquivo .env criado."
     echo
-    echo "ATENÇÃO:"
-    echo "Revise o arquivo .env antes de iniciar as Stacks."
-    echo
+    echo "⚠ Revise o arquivo .env antes de iniciar as Stacks."
 
 fi
 
-# ============================================================
-# Procura automaticamente todas as Stacks Docker
-# ============================================================
 
 echo
-echo "Procurando arquivos Docker Compose..."
+
+
+# ============================================================
+# Procurar arquivos docker-compose
+# ============================================================
+
+echo "Procurando ambientes Docker..."
 echo
 
-STACKS_FOUND=0
-STACKS_CONFIGURED=0
+
+declare -A DOCKER_DIRS
+
 
 while read -r COMPOSE_FILE
 do
 
-    STACKS_FOUND=$((STACKS_FOUND + 1))
+    DIR="$(dirname "$COMPOSE_FILE")"
 
-    STACK_DIR="$(dirname "$COMPOSE_FILE")"
+    DOCKER_DIRS["$DIR"]=1
 
-    ln -sfn ../../.env "$STACK_DIR/.env"
-
-    if [ -L "$STACK_DIR/.env" ]; then
-
-        echo "✔ $STACK_DIR"
-
-        STACKS_CONFIGURED=$((STACKS_CONFIGURED + 1))
-
-    else
-
-        echo "❌ Falha ao criar link em:"
-        echo "   $STACK_DIR"
-
-    fi
 
 done < <(
-    find docker -type f \
+    find docker \
+        -type f \
         \( -name "docker-compose*.yml" -o -name "docker-compose*.yaml" \) \
         | sort
 )
+
+
+
+FOUND=0
+CREATED=0
+EXISTING=0
+SKIPPED=0
+
+
+for DOCKER_DIR in "${!DOCKER_DIRS[@]}"
+do
+
+
+    FOUND=$((FOUND + 1))
+
+
+    ENV_LINK="$ORION_HOME/$DOCKER_DIR/.env"
+
+
+    if [ -L "$ENV_LINK" ]; then
+
+        echo "✔ Link existente:"
+        echo "  $DOCKER_DIR/.env"
+
+        EXISTING=$((EXISTING + 1))
+
+        continue
+
+    fi
+
+
+
+    if [ -e "$ENV_LINK" ]; then
+
+        echo "⚠ Arquivo .env manual encontrado:"
+        echo "  $DOCKER_DIR/.env"
+
+        echo "  Nenhuma alteração realizada."
+
+        SKIPPED=$((SKIPPED + 1))
+
+        continue
+
+    fi
+
+
+
+    RELATIVE_PATH=$(realpath \
+        --relative-to="$ORION_HOME/$DOCKER_DIR" \
+        "$ORION_HOME/.env"
+    )
+
+
+    ln -s "$RELATIVE_PATH" "$ENV_LINK"
+
+
+    echo "✔ Link criado:"
+    echo "  $DOCKER_DIR/.env -> $RELATIVE_PATH"
+
+
+    CREATED=$((CREATED + 1))
+
+
+done
+
+
 
 echo
 echo "============================================================"
@@ -122,18 +222,14 @@ echo "Resumo"
 echo "============================================================"
 echo
 
-echo "Stacks encontradas : $STACKS_FOUND"
-echo "Stacks configuradas: $STACKS_CONFIGURED"
-
-if [ "$STACKS_FOUND" -eq 0 ]; then
-
-    echo
-    echo "⚠ Nenhuma Stack Docker encontrada."
-
-fi
+echo "Ambientes encontrados : $FOUND"
+echo "Links criados          : $CREATED"
+echo "Links existentes       : $EXISTING"
+echo "Ignorados              : $SKIPPED"
 
 echo
+
 echo "============================================================"
-echo " Ambiente preparado."
+echo " Configuração finalizada."
 echo "============================================================"
 echo

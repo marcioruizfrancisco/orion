@@ -6,7 +6,7 @@ services:
 
     container_name: ${EXAMPLE_CONTAINER_NAME}
 
-    hostname: ${EXAMPLE_HOSTNAME}
+    # hostname: ${EXAMPLE_HOSTNAME}
 
     restart: unless-stopped
 

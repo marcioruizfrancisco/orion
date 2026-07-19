@@ -1,0 +1,38 @@
+services:
+
+  evolution-api:
+
+    image: ${EVOLUTION_IMAGE}
+
+    container_name: ${EVOLUTION_CONTAINER_NAME}
+
+    # hostname: ${EVOLUTION_HOSTNAME}
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://${EVOLUTION_DB_USER}:${EVOLUTION_DB_PASSWORD}@${POSTGRES_HOSTNAME}:5432/${EVOLUTION_DB_NAME}
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://${REDIS_HOSTNAME}:6379
+      SERVER_PORT: 8080    
+      
+      
+      
+    ports:
+      - "${EVOLUTION_PORT}:8080"
+
+    volumes:
+      - ${EVOLUTION_DATA_PATH}:/evolution/instances
+
+    networks:
+      - orion
+
+networks:
+
+  orion:
+    external: true
+    name: ${ORION_NETWORK}

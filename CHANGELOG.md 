@@ -6,6 +6,17 @@ O formato segue uma adaptação do padrão Keep a Changelog, mantendo o históri
 
 ---
 
+
+## [Unreleased] - 2026-07-18
+
+### Added
+
+- Primeira Stack oficial do Orion validada.
+- Evolution API integrada ao DockerBase.
+- Provisionamento automático PostgreSQL.
+- Integração completa utilizando Single Source of Truth (.env).
+
+
 # [1.0.0] - 2026-07-16
 
 ## Added

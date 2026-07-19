@@ -12,6 +12,8 @@ Documentação antes da implementação
 O Orion não cresce pela quantidade de código. Cresce pela qualidade dos padrões.
 Abstrações devem nascer da repetição, nunca da imaginação.
 
+As Stacks Orion devem conter apenas os serviços da aplicação. Toda infraestrutura compartilhada pertence ao DockerBase.
+
 
 Decisões Arquiteturais consolidadas neste ciclo
 ✅ Single Source of Truth (SSOT)

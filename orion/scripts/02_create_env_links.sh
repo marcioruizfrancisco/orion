@@ -21,19 +21,6 @@
 set -e
 
 # ============================================================
-# Remove o arquivo env ( já que estamos fazendo tudo no env.example )
-#
-# Uso:
-#	./02_create_env_links.sh --reset
-# ============================================================
-
-if [ "$1" = "--reset" ]; then
-    echo "Modo RESET ativado."
-    rm -f "$ORION_HOME/.env"
-fi
-
-
-# ============================================================
 # Localizar raiz do Orion
 # ============================================================
 
@@ -89,6 +76,25 @@ echo "Raiz encontrada:"
 echo "$ORION_HOME"
 
 echo
+
+
+
+
+# ============================================================
+# Remove o arquivo env ( já que estamos fazendo tudo no env.example )
+#
+# Uso:
+#	./02_create_env_links.sh --reset
+# ============================================================
+
+if [ "$1" = "--reset" ]; then
+    echo "Modo RESET ativado."
+    rm -f "$ORION_HOME/.env"
+    echo "✔ .env removido."
+else
+    echo "ℹ Nenhum .env para remover."    
+fi
+
 
 
 # ============================================================

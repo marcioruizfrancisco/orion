@@ -1,0 +1,54 @@
+services:
+
+  uptime-kuma:
+
+    image: ${UPTIMEKUMA_IMAGE}
+    container_name: ${UPTIMEKUMA_CONTAINER_NAME}
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      TZ: ${ORION_TZ}
+
+    ports:
+      - "${UPTIMEKUMA_PORT}:3001"
+
+    volumes:
+      # Guarda o SQLite do Uptime Kuma (monitores, histórico, config).
+      # Atenção: NÃO pode ser um volume em NFS, corrompe o banco.
+      - ${UPTIMEKUMA_DATA_PATH}:/app/data
+
+      # Descomentar somente se for usar o tipo de monitor "Docker
+      # Container" (checar se um container específico está rodando).
+      # Dá acesso de leitura ao daemon Docker do host — não expor
+      # o Uptime Kuma publicamente sem autenticação se habilitar isso.
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    healthcheck:
+      # A partir da v2, o próprio Uptime Kuma inclui um binário de
+      # healthcheck (não depende de curl/wget existirem na imagem).
+      test: ["CMD", "extra/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # Start period alto de propósito: migrações de banco no primeiro
+      # start (ou após upgrade de versão) podem demorar mais que o normal.
+      start_period: 180s
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.uptimekuma.rule: "Host(`${UPTIMEKUMA_HOSTNAME}`)"
+      traefik.http.routers.uptimekuma.entrypoints: "websecure"
+      traefik.http.routers.uptimekuma.tls.certresolver: "orion-resolver"
+      traefik.http.services.uptimekuma.loadbalancer.server.port: "3001"
+
+    networks:
+      - orion
+
+networks:
+
+  orion:
+    external: true
+    name: ${ORION_NETWORK}

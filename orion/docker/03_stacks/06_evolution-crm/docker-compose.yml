@@ -1,0 +1,81 @@
+services:
+  evocrm:
+    image: ${EVOCRM_IMAGE}
+    container_name: ${EVOCRM_CONTAINER_NAME}
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      DATABASE_URL: postgresql://${EVOCRM_DB_USER}:${EVOCRM_DB_PASSWORD}@${POSTGRES_HOSTNAME}:5432/${EVOCRM_DB_NAME}
+      REDIS_URL: redis://${REDIS_HOSTNAME}:6379/${EVOCRM_REDIS_DB}
+      RAILS_ENV: production
+
+      ACTIVE_STORAGE_SERVICE: local
+
+      # CONFIRMADO: mesma regra do auth-service, nada de localhost em produção.
+      BACKEND_URL: https://${EVOCRM_HOSTNAME}
+      FRONTEND_URL: https://${EVOCRM_FRONTEND_HOSTNAME}
+
+      # Onde o CRM encontra o serviço de autenticação (nome do
+      # container, já que estão na mesma rede "orion").
+      AUTH_SERVICE_URL: http://${EVOAUTH_CONTAINER_NAME}:3000
+
+      SECRET_KEY_BASE: ${EVOCRM_SECRET_KEY_BASE}
+
+      # Só o backend roda migrations no boot — o worker (Sidekiq)
+      # abaixo NÃO roda, pra evitar as duas tentando migrar juntas.
+      RUN_MIGRATIONS: "true"
+
+    ports:
+      - "${EVOCRM_PORT}:3000"
+
+    volumes:
+      - ${EVOCRM_STORAGE_PATH}:/app/storage
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.evocrm.rule: "Host(`${EVOCRM_HOSTNAME}`)"
+      traefik.http.routers.evocrm.entrypoints: "websecure"
+      traefik.http.routers.evocrm.tls.certresolver: "orion-resolver"
+      traefik.http.services.evocrm.loadbalancer.server.port: "3000"
+
+    networks:
+      - orion
+
+  evocrm-worker:
+    # Mesma imagem do backend, só troca o processo — igual ao
+    # padrão que o próprio projeto usa (rails + sidekiq).
+    image: ${EVOCRM_IMAGE}
+    container_name: ${EVOCRM_WORKER_CONTAINER_NAME}
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      DATABASE_URL: postgresql://${EVOCRM_DB_USER}:${EVOCRM_DB_PASSWORD}@${POSTGRES_HOSTNAME}:5432/${EVOCRM_DB_NAME}
+      REDIS_URL: redis://${REDIS_HOSTNAME}:6379/${EVOCRM_REDIS_DB}
+      RAILS_ENV: production
+      ACTIVE_STORAGE_SERVICE: local
+      AUTH_SERVICE_URL: http://${EVOAUTH_CONTAINER_NAME}:3000
+      SECRET_KEY_BASE: ${EVOCRM_SECRET_KEY_BASE}
+
+      # Explícito: o worker NUNCA roda migration, só o backend acima.
+      RUN_MIGRATIONS: "false"
+
+    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+
+    volumes:
+      # Mesmo storage do backend — worker também processa arquivos
+      # (anexos recebidos, avatares, etc.)
+      - ${EVOCRM_STORAGE_PATH}:/app/storage
+
+    networks:
+      - orion
+
+networks:
+  orion:
+    external: true
+    name: ${ORION_NETWORK}

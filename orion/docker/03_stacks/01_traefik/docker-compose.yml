@@ -1,0 +1,61 @@
+services:
+
+  traefik:
+
+    image: ${TRAEFIK_IMAGE}
+    container_name: ${TRAEFIK_CONTAINER_NAME}
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    command:
+      - "--log.level=${TRAEFIK_LOG_LEVEL}"
+
+      - "--api.dashboard=${TRAEFIK_DASHBOARD_ENABLED}"
+
+      - "--providers.docker=true"
+      - "--providers.docker.network=${ORION_NETWORK}"
+      # Segurança: nenhum container é exposto automaticamente.
+      # Cada stack precisa declarar "traefik.enable=true" nos seus labels.
+      - "--providers.docker.exposedbydefault=false"
+
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+
+      # Redireciona todo tráfego HTTP para HTTPS automaticamente
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+
+      # Certificados SSL automáticos via Let's Encrypt (desafio HTTP)
+      - "--certificatesresolvers.orion-resolver.acme.email=${TRAEFIK_ACME_EMAIL}"
+      - "--certificatesresolvers.orion-resolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.orion-resolver.acme.httpchallenge.entrypoint=web"
+
+    ports:
+      - "${TRAEFIK_HTTP_PORT}:80"
+      - "${TRAEFIK_HTTPS_PORT}:443"
+
+    volumes:
+      # Somente leitura: Traefik só precisa ler os eventos do Docker,
+      # nunca deve poder escrever no daemon.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${TRAEFIK_DATA_PATH}:/letsencrypt
+
+    labels:
+      # Dashboard do próprio Traefik, exposto por ele mesmo (opcional).
+      # Só funciona se TRAEFIK_DASHBOARD_ENABLED=true no .env
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`${TRAEFIK_DASHBOARD_HOSTNAME}`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=orion-resolver"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+
+    networks:
+      - orion
+
+networks:
+
+  orion:
+    external: true
+    name: ${ORION_NETWORK}

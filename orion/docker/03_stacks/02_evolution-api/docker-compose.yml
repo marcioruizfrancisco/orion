@@ -20,8 +20,6 @@ services:
       CACHE_REDIS_URI: redis://${REDIS_HOSTNAME}:6379
       SERVER_PORT: 8080    
       
-      
-      
     ports:
       - "${EVOLUTION_PORT}:8080"
 
@@ -31,6 +29,12 @@ services:
     networks:
       - orion
 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.evolution.rule=Host(`${EVOLUTION_HOSTNAME}`)"
+      - "traefik.http.routers.evolution.entrypoints=websecure"
+      - "traefik.http.routers.evolution.tls.certresolver=orion-resolver"
+      
 networks:
 
   orion:

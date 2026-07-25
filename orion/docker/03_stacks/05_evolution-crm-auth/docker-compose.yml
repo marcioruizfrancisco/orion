@@ -1,0 +1,47 @@
+services:
+  evo-auth:
+    image: ${EVOAUTH_IMAGE}
+    container_name: ${EVOAUTH_CONTAINER_NAME}
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      DATABASE_URL: postgresql://${EVOAUTH_DB_USER}:${EVOAUTH_DB_PASSWORD}@${POSTGRES_HOSTNAME}:5432/${EVOAUTH_DB_NAME}
+      REDIS_URL: redis://${REDIS_HOSTNAME}:6379/${EVOAUTH_REDIS_DB}
+      RAILS_ENV: production
+
+      # CONFIRMADO: em produção, essas duas NÃO podem apontar pra
+      # localhost — o serviço recusa subir (fail fast).
+      BACKEND_URL: https://${EVOAUTH_HOSTNAME}
+      FRONTEND_URL: https://${EVOCRM_FRONTEND_HOSTNAME}
+
+      SECRET_KEY_BASE: ${EVOAUTH_SECRET_KEY_BASE}
+
+      # Só este container roda migrations no boot. Evita race
+      # condition se algum dia adicionarmos um worker pro auth-service.
+      RUN_MIGRATIONS: "true"
+
+    ports:
+      - "${EVOAUTH_PORT}:3000"
+
+    volumes:
+      # Bind mount (não volume nomeado) — decisão deles mesmo,
+      # pra evitar o bug de permissão que já corrigiram.
+      - ${EVOAUTH_STORAGE_PATH}:/app/storage
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.evoauth.rule: "Host(`${EVOAUTH_HOSTNAME}`)"
+      traefik.http.routers.evoauth.entrypoints: "websecure"
+      traefik.http.routers.evoauth.tls.certresolver: "orion-resolver"
+      traefik.http.services.evoauth.loadbalancer.server.port: "3000"
+
+    networks:
+      - orion
+
+networks:
+  orion:
+    external: true
+    name: ${ORION_NETWORK}

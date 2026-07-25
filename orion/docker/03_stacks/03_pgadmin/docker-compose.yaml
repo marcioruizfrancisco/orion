@@ -1,0 +1,63 @@
+services:
+
+  pgadmin:
+
+    image: ${PGADMIN_IMAGE}
+
+    container_name: ${PGADMIN_CONTAINER_NAME}
+
+    # hostname: ${PGADMIN_HOSTNAME}
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+
+    ports:
+
+      - "${PGADMIN_PORT}:80"
+
+
+    volumes:
+
+      # Diretório real de dados do pgAdmin (config, sessões, conexões
+      # salvas). NÃO é a pasta de um site estático — sem isso, tudo
+      # que você configurar dentro do pgAdmin some a cada restart.
+      - ${PGADMIN_DATA_PATH}:/var/lib/pgadmin
+
+
+    healthcheck:
+
+      # curl não está garantido na imagem oficial (Alpine-based).
+      # python3 sempre existe, porque é o runtime do próprio pgAdmin.
+      test:
+        [
+          "CMD-SHELL",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:80/')\" || exit 1"
+        ]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
+
+      start_period: 10s
+
+
+    networks:
+
+      - orion
+
+
+
+networks:
+
+  orion:
+
+    external: true
+    name: ${ORION_NETWORK}

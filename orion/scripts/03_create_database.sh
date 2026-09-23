@@ -137,12 +137,12 @@ do
 	echo "Container PostgreSQL: [$POSTGRES_CONTAINER_NAME]"
 	echo "Postgres User : [$POSTGRES_USER]"
 
+	# --env-file repassa TODAS as variáveis do .env, e não só as
+	# da Evolution API, para que o script funcione com qualquer
+	# Stack (evo-auth, evocrm, etc.), não só a primeira que existiu.
 	if   docker exec \
 	    -u postgres \
-	    -e POSTGRES_USER="$POSTGRES_USER" \
-	    -e EVOLUTION_DB_NAME="$EVOLUTION_DB_NAME" \
-	    -e EVOLUTION_DB_USER="$EVOLUTION_DB_USER" \
-	    -e EVOLUTION_DB_PASSWORD="$EVOLUTION_DB_PASSWORD" \
+	    --env-file "$ORION_HOME/.env" \
 	    -i "$POSTGRES_CONTAINER_NAME" \
 	    bash < "$SCRIPT"
 	then

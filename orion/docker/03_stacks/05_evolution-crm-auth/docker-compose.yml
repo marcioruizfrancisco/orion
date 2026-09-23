@@ -24,19 +24,21 @@ services:
       RUN_MIGRATIONS: "true"
 
     ports:
-      - "${EVOAUTH_PORT}:3000"
+      # A imagem 1.1.0 sobe o Rails server na porta 3001 (não 3000).
+      - "${EVOAUTH_PORT}:3001"
 
     volumes:
       # Bind mount (não volume nomeado) — decisão deles mesmo,
       # pra evitar o bug de permissão que já corrigiram.
-      - ${EVOAUTH_STORAGE_PATH}:/app/storage
+      # WorkingDir da imagem 1.1.0 é /rails (não /app).
+      - ${EVOAUTH_STORAGE_PATH}:/rails/storage
 
     labels:
       traefik.enable: "true"
       traefik.http.routers.evoauth.rule: "Host(`${EVOAUTH_HOSTNAME}`)"
       traefik.http.routers.evoauth.entrypoints: "websecure"
       traefik.http.routers.evoauth.tls.certresolver: "orion-resolver"
-      traefik.http.services.evoauth.loadbalancer.server.port: "3000"
+      traefik.http.services.evoauth.loadbalancer.server.port: "3001"
 
     networks:
       - orion

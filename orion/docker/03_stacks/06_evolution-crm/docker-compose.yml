@@ -19,8 +19,9 @@ services:
       FRONTEND_URL: https://${EVOCRM_FRONTEND_HOSTNAME}
 
       # Onde o CRM encontra o serviço de autenticação (nome do
-      # container, já que estão na mesma rede "orion").
-      AUTH_SERVICE_URL: http://${EVOAUTH_CONTAINER_NAME}:3000
+      # container, já que estão na mesma rede "orion"). A imagem
+      # evo-auth 1.1.0 escuta em 3001 (não 3000).
+      AUTH_SERVICE_URL: http://${EVOAUTH_CONTAINER_NAME}:3001
 
       SECRET_KEY_BASE: ${EVOCRM_SECRET_KEY_BASE}
 
@@ -59,7 +60,13 @@ services:
       REDIS_URL: redis://${REDIS_HOSTNAME}:6379/${EVOCRM_REDIS_DB}
       RAILS_ENV: production
       ACTIVE_STORAGE_SERVICE: local
-      AUTH_SERVICE_URL: http://${EVOAUTH_CONTAINER_NAME}:3000
+
+      # Mesma regra do backend: em produção o Rails recusa subir sem
+      # essas duas (o worker também carrega config/environments/production.rb).
+      BACKEND_URL: https://${EVOCRM_HOSTNAME}
+      FRONTEND_URL: https://${EVOCRM_FRONTEND_HOSTNAME}
+
+      AUTH_SERVICE_URL: http://${EVOAUTH_CONTAINER_NAME}:3001
       SECRET_KEY_BASE: ${EVOCRM_SECRET_KEY_BASE}
 
       # Explícito: o worker NUNCA roda migration, só o backend acima.

@@ -1,0 +1,120 @@
+{
+  "groups": [
+    {
+      "name": "Atendimento e CRM",
+      "services": [
+        {
+          "name": "Chatwoot",
+          "id": "chatwoot",
+          "probe": "http://${CHATWOOT_CONTAINER_NAME}:3000/api",
+          "description": "Caixa de entrada unificada: WhatsApp, e-mail, chat do site.",
+          "url": "${CHATWOOT_PUBLIC_URL}",
+          "icon": "💬"
+        },
+        {
+          "name": "Evolution API",
+          "id": "evolution",
+          "probe": "http://${EVOLUTION_CONTAINER_NAME}:8080/",
+          "description": "Gateway de WhatsApp. Painel em /manager.",
+          "url": "http://localhost:${EVOLUTION_PORT}/manager",
+          "check": "http://localhost:${EVOLUTION_PORT}",
+          "icon": "📱"
+        },
+        {
+          "name": "Evolution CRM",
+          "id": "evocrm",
+          "probe": "http://${EVOCRM_CONTAINER_NAME}:3000/",
+          "description": "API do CRM (backend). Sem interface web própria ainda.",
+          "url": "http://localhost:${EVOCRM_PORT}",
+          "icon": "🧩"
+        },
+        {
+          "name": "Evolution CRM Auth",
+          "id": "evoauth",
+          "probe": "http://${EVOAUTH_CONTAINER_NAME}:3001/health",
+          "description": "Serviço de autenticação do CRM (API).",
+          "url": "http://localhost:${EVOAUTH_PORT}",
+          "icon": "🔑"
+        }
+      ]
+    },
+    {
+      "name": "Automação e agenda",
+      "services": [
+        {
+          "name": "n8n",
+          "id": "n8n",
+          "probe": "http://${N8N_CONTAINER_NAME}:5678/healthz",
+          "description": "Automação de fluxos, webhooks e integrações.",
+          "url": "${N8N_PUBLIC_URL}",
+          "icon": "⚙️"
+        },
+        {
+          "name": "Cal.com",
+          "id": "calcom",
+          "probe": "http://${CALCOM_CONTAINER_NAME}:3000/auth/login",
+          "description": "Agendamento online e páginas de reserva.",
+          "url": "${CALCOM_PUBLIC_URL}",
+          "icon": "📅"
+        }
+      ]
+    },
+    {
+      "name": "E-mail e pagamentos",
+      "services": [
+        {
+          "name": "Mailpit",
+          "id": "mailpit",
+          "probe": "http://${MAILPIT_CONTAINER_NAME}:8025/readyz",
+          "description": "SMTP + caixa de entrada + API de envio (POST /api/v1/send).",
+          "url": "http://localhost:${MAILPIT_UI_PORT}",
+          "icon": "✉️"
+        },
+        {
+          "name": "Stripe Mock",
+          "id": "stripemock",
+          "probe": "http://${STRIPE_MOCK_CONTAINER_NAME}:12111/",
+          "description": "API falsa do Stripe para desenvolvimento, sem chave real.",
+          "url": "http://localhost:${STRIPE_MOCK_PORT}",
+          "icon": "💳"
+        },
+        {
+          "name": "Stripe Dashboard",
+          "description": "Painel oficial do Stripe (modo teste). Serviço externo.",
+          "url": "https://dashboard.stripe.com/test/dashboard",
+          "check": false,
+          "external": true,
+          "icon": "🧾"
+        }
+      ]
+    },
+    {
+      "name": "Infraestrutura",
+      "services": [
+        {
+          "name": "pgAdmin",
+          "id": "pgadmin",
+          "probe": "http://${PGADMIN_CONTAINER_NAME}:80/misc/ping",
+          "description": "Administração do PostgreSQL.",
+          "url": "http://localhost:${PGADMIN_PORT}",
+          "icon": "🐘"
+        },
+        {
+          "name": "Uptime Kuma",
+          "id": "uptimekuma",
+          "probe": "http://${UPTIMEKUMA_CONTAINER_NAME}:3001/",
+          "description": "Monitoramento e alertas de disponibilidade.",
+          "url": "http://localhost:${UPTIMEKUMA_PORT}",
+          "icon": "📈"
+        },
+        {
+          "name": "Portainer",
+          "description": "Gerenciamento dos containers Docker. Certificado próprio (HTTPS).",
+          "url": "https://localhost:9443",
+          "check": false,
+          "icon": "🐳"
+        }
+      ]
+    }
+  ]
+}

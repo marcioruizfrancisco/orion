@@ -7,6 +7,29 @@ O formato segue uma adaptação do padrão Keep a Changelog, mantendo o históri
 ---
 
 
+## [Unreleased] - 2026-09-24
+
+### Added
+
+- Stack Chatwoot (atendimento omnichannel): web, worker Sidekiq e preparo de banco.
+- Stack n8n (automação de fluxos) com PostgreSQL da DockerBase.
+- Stack Cal.com (agendamento) com PostgreSQL da DockerBase.
+- Stack Mailpit: SMTP compartilhado, caixa de entrada web e API de envio de e-mail.
+- Stack Stripe: `stripe-mock` (API falsa) e `stripe-cli` (webhooks reais, perfil `cli`).
+- Stack Dashboard: página inicial com atalhos e status de todos os serviços.
+- `04_generate_secrets.sh`: gera senhas e chaves aleatórias no lugar dos `troque-...`.
+- `05_prepare_storage.sh`: cria os diretórios de storage com a permissão correta.
+- `06_up_all.sh`: sobe o Orion inteiro na ordem certa.
+- `docs/stacks.md`: mapa das Stacks, portas e primeiro acesso.
+
+### Changed
+
+- `02_create_env_links.sh` ajusta `ORION_ROOT` para o caminho real da instalação.
+- `.env.example` atualizado: Traefik v3.6, evo-auth 1.1.0 e `DOORKEEPER_JWT_SECRET_KEY`.
+
+---
+
+
 ## [Unreleased] - 2026-07-18
 
 ### Added

@@ -1,0 +1,134 @@
+# ============================================================
+# Orion - Stack: Chatwoot (atendimento omnichannel)
+#
+#   chatwoot-prepare  Roda UMA vez e sai: cria/migra o banco
+#                     (db:chatwoot_prepare). Web e worker só sobem
+#                     depois que ele termina com sucesso.
+#   chatwoot          Rails (web) na porta 3000 do container.
+#   chatwoot-worker   Sidekiq (e-mails, webhooks, integrações).
+#
+# Banco: PostgreSQL com pgvector da DockerBase (database/postgres/).
+# ============================================================
+
+x-chatwoot-env: &chatwoot-env
+  RAILS_ENV: production
+  NODE_ENV: production
+  INSTALLATION_ENV: docker
+  SECRET_KEY_BASE: ${CHATWOOT_SECRET_KEY_BASE}
+  FRONTEND_URL: ${CHATWOOT_PUBLIC_URL}
+  FORCE_SSL: "false"
+  ENABLE_ACCOUNT_SIGNUP: "false"
+  DEFAULT_LOCALE: pt_BR
+  TZ: ${ORION_TZ}
+
+  POSTGRES_HOST: ${POSTGRES_HOSTNAME}
+  POSTGRES_PORT: "5432"
+  POSTGRES_DATABASE: ${CHATWOOT_DB_NAME}
+  POSTGRES_USERNAME: ${CHATWOOT_DB_USER}
+  POSTGRES_PASSWORD: ${CHATWOOT_DB_PASSWORD}
+  REDIS_URL: redis://${REDIS_HOSTNAME}:6379/${CHATWOOT_REDIS_DB}
+
+  ACTIVE_STORAGE_SERVICE: local
+
+  MAILER_SENDER_EMAIL: ${MAIL_FROM_NAME} <${MAIL_FROM_ADDRESS}>
+  SMTP_ADDRESS: ${SMTP_HOST}
+  SMTP_PORT: ${SMTP_PORT}
+  SMTP_USERNAME: ${SMTP_USER}
+  SMTP_PASSWORD: ${SMTP_PASSWORD}
+  SMTP_AUTHENTICATION: plain
+  SMTP_ENABLE_STARTTLS_AUTO: ${SMTP_SECURE}
+
+services:
+
+  chatwoot-prepare:
+
+    image: ${CHATWOOT_IMAGE}
+
+    container_name: ${CHATWOOT_PREPARE_CONTAINER_NAME}
+
+    restart: "no"
+
+    entrypoint: docker/entrypoints/rails.sh
+
+    command: ["bundle", "exec", "rails", "db:chatwoot_prepare"]
+
+    environment:
+      <<: *chatwoot-env
+
+    networks:
+      - orion
+
+
+  chatwoot:
+
+    image: ${CHATWOOT_IMAGE}
+
+    container_name: ${CHATWOOT_CONTAINER_NAME}
+
+    restart: unless-stopped
+
+    depends_on:
+      chatwoot-prepare:
+        condition: service_completed_successfully
+
+    entrypoint: docker/entrypoints/rails.sh
+
+    command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
+
+    environment:
+      <<: *chatwoot-env
+
+    ports:
+      - "${CHATWOOT_PORT}:3000"
+
+    volumes:
+      - ${CHATWOOT_STORAGE_PATH}:/app/storage
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/api || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.chatwoot.rule: "Host(`${CHATWOOT_HOSTNAME}`)"
+      traefik.http.routers.chatwoot.entrypoints: "websecure"
+      traefik.http.routers.chatwoot.tls.certresolver: "orion-resolver"
+      traefik.http.services.chatwoot.loadbalancer.server.port: "3000"
+
+    networks:
+      - orion
+
+
+  chatwoot-worker:
+
+    image: ${CHATWOOT_IMAGE}
+
+    container_name: ${CHATWOOT_WORKER_CONTAINER_NAME}
+
+    restart: unless-stopped
+
+    depends_on:
+      chatwoot-prepare:
+        condition: service_completed_successfully
+
+    entrypoint: docker/entrypoints/rails.sh
+
+    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+
+    environment:
+      <<: *chatwoot-env
+
+    volumes:
+      - ${CHATWOOT_STORAGE_PATH}:/app/storage
+
+    networks:
+      - orion
+
+networks:
+
+  orion:
+    external: true
+    name: ${ORION_NETWORK}

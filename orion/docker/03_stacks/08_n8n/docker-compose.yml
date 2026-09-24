@@ -1,0 +1,69 @@
+# ============================================================
+# Orion - Stack: n8n (automação de fluxos)
+#
+# Banco: PostgreSQL da DockerBase (database/postgres/).
+# Modo: instância única (sem fila/workers) — suficiente para uso
+# local e para volumes moderados.
+# ============================================================
+
+services:
+
+  n8n:
+
+    image: ${N8N_IMAGE}
+
+    container_name: ${N8N_CONTAINER_NAME}
+
+    restart: unless-stopped
+
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: ${POSTGRES_HOSTNAME}
+      DB_POSTGRESDB_PORT: "5432"
+      DB_POSTGRESDB_DATABASE: ${N8N_DB_NAME}
+      DB_POSTGRESDB_USER: ${N8N_DB_USER}
+      DB_POSTGRESDB_PASSWORD: ${N8N_DB_PASSWORD}
+
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+
+      # URL pela qual o NAVEGADOR e os serviços externos (Stripe,
+      # Chatwoot, ...) enxergam o n8n. Vira o prefixo dos webhooks.
+      N8N_EDITOR_BASE_URL: ${N8N_PUBLIC_URL}
+      WEBHOOK_URL: ${N8N_PUBLIC_URL}/
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE}
+
+      GENERIC_TIMEZONE: ${ORION_TZ}
+      TZ: ${ORION_TZ}
+
+      N8N_RUNNERS_ENABLED: "true"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+
+    ports:
+      - "${N8N_PORT}:5678"
+
+    volumes:
+      - ${N8N_DATA_PATH}:/home/node/.n8n
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:5678/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.n8n.rule: "Host(`${N8N_HOSTNAME}`)"
+      traefik.http.routers.n8n.entrypoints: "websecure"
+      traefik.http.routers.n8n.tls.certresolver: "orion-resolver"
+      traefik.http.services.n8n.loadbalancer.server.port: "5678"
+
+    networks:
+      - orion
+
+networks:
+
+  orion:
+    external: true
+    name: ${ORION_NETWORK}

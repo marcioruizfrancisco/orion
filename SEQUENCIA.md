@@ -38,7 +38,14 @@ mkdir ../../../storage/pgadmin
 20.8 - subir o docker : docker compose -f docker-compose.yml up -d
 
 
+------------------------------------------------------------
+ATALHO (ambiente novo ou reinstalação)
+------------------------------------------------------------
 
+cd orion/scripts
+./02_create_env_links.sh     # cria o .env a partir do .env.example
+./06_up_all.sh               # segredos, storage, bancos e todas as Stacks
 
+Depois abra o dashboard: http://localhost:8088
+Detalhes de cada Stack: orion/docs/stacks.md
 
- 

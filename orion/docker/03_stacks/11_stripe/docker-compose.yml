@@ -1,0 +1,62 @@
+# ============================================================
+# Orion - Stack: Stripe
+#
+# O Stripe é um serviço em nuvem; aqui ficam as ferramentas locais:
+#
+#   stripe-mock  API falsa do Stripe. Sem chave, sem internet.
+#                http://localhost:${STRIPE_MOCK_PORT}  (use qualquer
+#                chave "sk_test_...", ex.: sk_test_mock)
+#
+#   stripe-cli   Encaminha webhooks REAIS (modo teste) para o n8n.
+#                Perfil "cli": só sobe quando pedido, e exige
+#                STRIPE_SECRET_KEY no .env:
+#
+#                  docker compose --profile cli up -d
+#
+#                O segredo de assinatura (whsec_...) aparece nos logs:
+#                  docker logs orion-stripe-cli
+# ============================================================
+
+services:
+
+  stripe-mock:
+
+    image: ${STRIPE_MOCK_IMAGE}
+
+    container_name: ${STRIPE_MOCK_CONTAINER_NAME}
+
+    restart: unless-stopped
+
+    ports:
+      - "${STRIPE_MOCK_PORT}:12111"
+
+    networks:
+      - orion
+
+
+  stripe-cli:
+
+    image: ${STRIPE_CLI_IMAGE}
+
+    container_name: ${STRIPE_CLI_CONTAINER_NAME}
+
+    profiles:
+      - cli
+
+    restart: unless-stopped
+
+    command:
+      - listen
+      - --api-key
+      - ${STRIPE_SECRET_KEY}
+      - --forward-to
+      - ${STRIPE_WEBHOOK_FORWARD_URL}
+
+    networks:
+      - orion
+
+networks:
+
+  orion:
+    external: true
+    name: ${ORION_NETWORK}

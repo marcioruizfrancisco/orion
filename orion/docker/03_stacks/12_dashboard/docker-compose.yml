@@ -1,0 +1,77 @@
+# ============================================================
+# Orion - Stack: Dashboard
+#
+# Página inicial do Orion: atalhos para todos os serviços, com
+# indicador de online/fora do ar.
+#
+# O site fica em www/dashboard/. A lista de serviços é
+# www/dashboard/services.template.json; os ${...} dela são
+# preenchidos com as variáveis abaixo quando o container sobe.
+# Para incluir um serviço novo: adicionar um bloco no template e,
+# se ele usar variável nova, listá-la em "environment".
+# ============================================================
+
+services:
+
+  dashboard:
+
+    image: ${DASHBOARD_IMAGE}
+
+    container_name: ${DASHBOARD_CONTAINER_NAME}
+
+    restart: unless-stopped
+
+    environment:
+      CHATWOOT_PUBLIC_URL: ${CHATWOOT_PUBLIC_URL}
+      N8N_PUBLIC_URL: ${N8N_PUBLIC_URL}
+      CALCOM_PUBLIC_URL: ${CALCOM_PUBLIC_URL}
+      EVOLUTION_PORT: ${EVOLUTION_PORT}
+      EVOAUTH_PORT: ${EVOAUTH_PORT}
+      EVOCRM_PORT: ${EVOCRM_PORT}
+      MAILPIT_UI_PORT: ${MAILPIT_UI_PORT}
+      STRIPE_MOCK_PORT: ${STRIPE_MOCK_PORT}
+      PGADMIN_PORT: ${PGADMIN_PORT}
+      UPTIMEKUMA_PORT: ${UPTIMEKUMA_PORT}
+
+      # Nomes dos containers: o nginx do dashboard usa para verificar
+      # (por dentro da rede Docker) se cada serviço está respondendo.
+      CHATWOOT_CONTAINER_NAME: ${CHATWOOT_CONTAINER_NAME}
+      EVOLUTION_CONTAINER_NAME: ${EVOLUTION_CONTAINER_NAME}
+      EVOCRM_CONTAINER_NAME: ${EVOCRM_CONTAINER_NAME}
+      EVOAUTH_CONTAINER_NAME: ${EVOAUTH_CONTAINER_NAME}
+      N8N_CONTAINER_NAME: ${N8N_CONTAINER_NAME}
+      CALCOM_CONTAINER_NAME: ${CALCOM_CONTAINER_NAME}
+      MAILPIT_CONTAINER_NAME: ${MAILPIT_CONTAINER_NAME}
+      STRIPE_MOCK_CONTAINER_NAME: ${STRIPE_MOCK_CONTAINER_NAME}
+      PGADMIN_CONTAINER_NAME: ${PGADMIN_CONTAINER_NAME}
+      UPTIMEKUMA_CONTAINER_NAME: ${UPTIMEKUMA_CONTAINER_NAME}
+
+    ports:
+      - "${DASHBOARD_PORT}:80"
+
+    volumes:
+      - ${DASHBOARD_WEB_PATH}:/site:ro
+      - ./40-orion-dashboard-config.sh:/docker-entrypoint.d/40-orion-dashboard-config.sh:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/services.json || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.dashboard.rule: "Host(`${DASHBOARD_HOSTNAME}`)"
+      traefik.http.routers.dashboard.entrypoints: "websecure"
+      traefik.http.routers.dashboard.tls.certresolver: "orion-resolver"
+      traefik.http.services.dashboard.loadbalancer.server.port: "80"
+
+    networks:
+      - orion
+
+networks:
+
+  orion:
+    external: true
+    name: ${ORION_NETWORK}

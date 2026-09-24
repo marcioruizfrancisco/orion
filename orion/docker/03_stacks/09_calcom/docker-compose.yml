@@ -1,0 +1,78 @@
+# ============================================================
+# Orion - Stack: Cal.com (agendamento)
+#
+# Imagem oficial. No boot ela: troca a URL embutida no build pela
+# NEXT_PUBLIC_WEBAPP_URL, aplica as migrations do Prisma e popula a
+# loja de apps. Por isso a primeira subida demora alguns minutos.
+#
+# Banco: PostgreSQL da DockerBase (database/postgres/).
+# E-mail: SMTP compartilhado do Orion (Mailpit por padrão).
+# Pagamentos: se STRIPE_* estiver preenchido no .env, o app "Stripe"
+# do Cal.com fica disponível (o STRIPE_CLIENT_ID vem do Stripe Connect).
+# ============================================================
+
+services:
+
+  calcom:
+
+    image: ${CALCOM_IMAGE}
+
+    container_name: ${CALCOM_CONTAINER_NAME}
+
+    restart: unless-stopped
+
+    environment:
+      # wait-for-it.sh do start.sh precisa de "host:porta".
+      DATABASE_HOST: ${POSTGRES_HOSTNAME}:5432
+      DATABASE_URL: postgresql://${CALCOM_DB_USER}:${CALCOM_DB_PASSWORD}@${POSTGRES_HOSTNAME}:5432/${CALCOM_DB_NAME}
+      DATABASE_DIRECT_URL: postgresql://${CALCOM_DB_USER}:${CALCOM_DB_PASSWORD}@${POSTGRES_HOSTNAME}:5432/${CALCOM_DB_NAME}
+
+      # URL pela qual o NAVEGADOR abre o Cal.com (ver .env).
+      NEXT_PUBLIC_WEBAPP_URL: ${CALCOM_PUBLIC_URL}
+      NEXT_PUBLIC_WEBSITE_URL: ${CALCOM_PUBLIC_URL}
+      NEXTAUTH_URL: ${CALCOM_PUBLIC_URL}/api/auth
+      NEXTAUTH_SECRET: ${CALCOM_NEXTAUTH_SECRET}
+      CALENDSO_ENCRYPTION_KEY: ${CALCOM_ENCRYPTION_KEY}
+
+      NEXT_PUBLIC_LICENSE_CONSENT: agree
+      CALCOM_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_APP_NAME: Orion Agenda
+
+      EMAIL_FROM: ${MAIL_FROM_ADDRESS}
+      EMAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      EMAIL_SERVER_HOST: ${SMTP_HOST}
+      EMAIL_SERVER_PORT: ${SMTP_PORT}
+      EMAIL_SERVER_USER: ${SMTP_USER}
+      EMAIL_SERVER_PASSWORD: ${SMTP_PASSWORD}
+
+      STRIPE_PRIVATE_KEY: ${STRIPE_SECRET_KEY}
+      NEXT_PUBLIC_STRIPE_PUBLIC_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+
+      TZ: ${ORION_TZ}
+
+    ports:
+      - "${CALCOM_PORT}:3000"
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:3000/auth/login || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 6
+      start_period: 240s
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.calcom.rule: "Host(`${CALCOM_HOSTNAME}`)"
+      traefik.http.routers.calcom.entrypoints: "websecure"
+      traefik.http.routers.calcom.tls.certresolver: "orion-resolver"
+      traefik.http.services.calcom.loadbalancer.server.port: "3000"
+
+    networks:
+      - orion
+
+networks:
+
+  orion:
+    external: true
+    name: ${ORION_NETWORK}

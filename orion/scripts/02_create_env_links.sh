@@ -119,8 +119,12 @@ else
 
     cp .env.example .env
 
+    # ORION_ROOT precisa apontar para onde o Orion está instalado NESTA
+    # máquina; o valor do .env.example é só um exemplo.
+    sed -i -E "s|^ORION_ROOT=.*|ORION_ROOT=$ORION_HOME|" .env
 
-    echo "✔ Arquivo .env criado."
+
+    echo "✔ Arquivo .env criado (ORION_ROOT=$ORION_HOME)."
     echo
     echo "⚠ Revise o arquivo .env antes de iniciar as Stacks."
 
